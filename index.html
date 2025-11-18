@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smith Savani · Systems Notebook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #040d12;
+            --panel: #0b1e26;
+            --panel-light: #112a35;
+            --accent: #76e4ff;
+            --accent-strong: #00d1ff;
+            --text: #f5fbff;
+            --muted: #9ac6d7;
+            --warning: #ffb347;
+        }
+
+        [data-theme="day"] {
+            --bg: #faf9f6;
+            --panel: #ffffff;
+            --panel-light: #f3f6fb;
+            --accent: #3d5afe;
+            --accent-strong: #1d4ed8;
+            --text: #0f172a;
+            --muted: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 100vh;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        aside {
+            background: var(--panel);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            align-self: start;
+            height: 100vh;
+        }
+
+        .avatar-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 40%;
+            border: 4px solid var(--accent);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .avatar-ring img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .name-block h1 {
+            font-size: 1.9rem;
+            margin: 0;
+        }
+
+        .name-block span {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        nav a {
+            color: var(--muted);
+            text-decoration: none;
+            padding: 0.6rem 0.8rem;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        nav a.active,
+        nav a:hover {
+            background: rgba(118, 228, 255, 0.15);
+            color: var(--accent-strong);
+        }
+
+        .theme-toggle {
+            border: none;
+            border-radius: 999px;
+            padding: 0.65rem 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: inherit;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        main {
+            padding: 2.5rem clamp(1.5rem, 4vw, 4rem);
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        section {
+            background: var(--panel);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
+
+        section h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .stat-card {
+            background: var(--panel-light);
+            padding: 1.5rem;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card strong {
+            font-size: 2rem;
+            display: block;
+        }
+
+        .timeline {
+            border-left: 2px solid rgba(255,255,255,0.15);
+            padding-left: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 0.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.82rem;
+            top: 0.4rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .project-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chip {
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 999px;
+            padding: 0.4rem 0.9rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .chip.active {
+            background: var(--accent);
+            color: #041014;
+            border-color: transparent;
+        }
+
+        .project-card {
+            background: var(--panel-light);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .project-card.hidden {
+            display: none;
+        }
+
+        .project-card button {
+            margin-top: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .project-details {
+            display: none;
+            margin-top: 0.75rem;
+            color: var(--muted);
+        }
+
+        .project-details.show {
+            display: block;
+        }
+
+        .skill-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .skill-pill {
+            background: rgba(255,255,255,0.08);
+            padding: 1rem;
+            border-radius: 16px;
+        }
+
+        .progress-track {
+            background: rgba(255,255,255,0.15);
+            border-radius: 999px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+        }
+
+        .accordion {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .accordion-item + .accordion-item {
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .accordion summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 1rem 1.25rem;
+        }
+
+        .accordion summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .accordion summary span {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .accordion div {
+            padding: 0 1.25rem 1rem;
+            color: var(--muted);
+        }
+
+        @media (max-width: 960px) {
+            body {
+                grid-template-columns: 1fr;
+            }
+
+            aside {
+                height: auto;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body data-theme="night">
+    <aside>
+        <div>
+            <div class="avatar-ring">
+                <img src="my photo.jpg" alt="Smith Savani portrait">
+            </div>
+            <div class="name-block">
+                <h1>Smith Savani</h1>
+                <span>Systems Builder · Gandhinagar</span>
+            </div>
+        </div>
+        <div>
+            <p style="margin:0; color: var(--muted);">B.Tech CSE · Pandit Deendayal Energy University · 2027</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#overview" class="active">Overview</a></li>
+                <li><a href="#trajectory">Trajectory</a></li>
+                <li><a href="#lab">Project Lab</a></li>
+                <li><a href="#stack">Systems Stack</a></li>
+                <li><a href="#briefs">Experience Briefs</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <button class="theme-toggle" id="themeToggle">Switch Theme</button>
+        <div>
+            <small style="color: var(--muted);">Direct</small>
+            <p style="margin:0.3rem 0;">parth25911@gmail.com</p>
+            <p style="margin:0;">+91 90161 39551</p>
+        </div>
+    </aside>
+
+    <main>
+        <section id="overview">
+            <h2>Mission Control</h2>
+            <p>I translate operational puzzles into reliable software. My work spans edge analytics for logistics, control dashboards for infrastructure, and heavy-use APIs for internal tooling. I iterate fast, automate everything, and document the reasoning so teammates can reason about trade-offs.</p>
+            <div class="grid" style="margin-top:1.5rem;">
+                <div class="stat-card">
+                    <strong>12+</strong>
+                    <span>microservices & internal tools released during university</span>
+                </div>
+                <div class="stat-card">
+                    <strong>4</strong>
+                    <span>hackathons & industry challenges led end-to-end</span>
+                </div>
+                <div class="stat-card">
+                    <strong>2</strong>
+                    <span>production-style deployments w/ Kubernetes + observability</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="trajectory">
+            <h2>Trajectory</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h3>Operations Operating System</h3>
+                    <p>Built a control-center style dashboard that unified warehouse sensor feeds, courier milestones, and exception alerts for a local logistics partner pilot.</p>
+                    <small>2024 · PDEU DevSprint</small>
+                </div>
+                <div class="timeline-item">
+                    <h3>Predictive Energy Canvassing</h3>
+                    <p>Analyzed smart meter telemetry to forecast residential clusters with upcoming peak load spikes, helping teams pre-plan switching instructions.</p>
+                    <small>2023 · University Research Cell</small>
+                </div>
+                <div class="timeline-item">
+                    <h3>Distributed Systems Track</h3>
+                    <p>Completed university-sponsored specialization with capstones in stream processing, consensus, and infrastructure-as-code.</p>
+                    <small>2023-2024 · PDEU</small>
+                </div>
+            </div>
+        </section>
+
+        <section id="lab">
+            <h2>Project Lab</h2>
+            <div class="project-filters">
+                <span class="chip active" data-skill="all">Show All</span>
+                <span class="chip" data-skill="ai">AI</span>
+                <span class="chip" data-skill="iot">IoT</span>
+                <span class="chip" data-skill="platform">Platform</span>
+                <span class="chip" data-skill="data">Data</span>
+            </div>
+
+            <div class="project-card" data-tags="platform data">
+                <h3>Urban Transit Command Board</h3>
+                <p>Designed a control-plane for city transit operations that ingested GTFS feeds, AVL pings, and passenger telemetry to automatically surface disruptions.</p>
+                <button class="project-toggle">See technical view</button>
+                <div class="project-details">
+                    <ul>
+                        <li>Provisioned per-route anomaly detection with Apache Flink + Redis</li>
+                        <li>Implemented map-driven workflow UI with WebGL overlays</li>
+                        <li>Reduced operator reaction time by 31% during simulated load</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="project-card" data-tags="ai data">
+                <h3>BidSense Pricing Co-Pilot</h3>
+                <p>Built an explainable ML assistant for procurement that suggests evidence-backed vendor bids, referencing historical quality and logistics scorecards.</p>
+                <button class="project-toggle">See technical view</button>
+                <div class="project-details">
+                    <ul>
+                        <li>Hybrid gradient boosting + causal forests to weigh supplier quality</li>
+                        <li>Panel-based explanation UI with natural language rationales</li>
+                        <li>Auto-generated negotiation briefs exported to Notion + Slack</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="project-card" data-tags="iot platform">
+                <h3>EdgeRail Guard</h3>
+                <p>Edge analytics kit for railway sidings that monitors track vibration, weather, and signaling to predict maintenance windows.</p>
+                <button class="project-toggle">See technical view</button>
+                <div class="project-details">
+                    <ul>
+                        <li>STM32 + TinyML running anomaly detection offline</li>
+                        <li>LoRaWAN uplink to Kubernetes ingestion service with automatic OTA updates</li>
+                        <li>Playbooks auto-created in Grafana OnCall</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="project-card" data-tags="ai iot">
+                <h3>PlantPulse</h3>
+                <p>Autonomous greenhouse supervisor blending spectral imaging and irrigation scheduling for precision agriculture labs.</p>
+                <button class="project-toggle">See technical view</button>
+                <div class="project-details">
+                    <ul>
+                        <li>Edge TPU inference for disease scoring in under 200ms</li>
+                        <li>Control API integrates with PLCs for nutrient dosing</li>
+                        <li>Forecast panel shares health metrics with farm managers</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="stack">
+            <h2>Systems Stack</h2>
+            <div class="skill-matrix">
+                <div class="skill-pill">
+                    <strong>Java · Spring</strong>
+                    <div class="progress-track"><div class="progress-fill" style="width:92%;"></div></div>
+                    <small>Async/adaptive services, Resilience4j, CQRS patterns</small>
+                </div>
+                <div class="skill-pill">
+                    <strong>DevOps & SRE</strong>
+                    <div class="progress-track"><div class="progress-fill" style="width:85%;"></div></div>
+                    <small>GitHub Actions, ArgoCD, Grafana, OpenTelemetry</small>
+                </div>
+                <div class="skill-pill">
+                    <strong>Data & AI</strong>
+                    <div class="progress-track"><div class="progress-fill" style="width:80%;"></div></div>
+                    <small>XGBoost, SHAP, dbt, stream processing</small>
+                </div>
+                <div class="skill-pill">
+                    <strong>Human Systems</strong>
+                    <div class="progress-track"><div class="progress-fill" style="width:76%;"></div></div>
+                    <small>Design sprints, facilitation, stakeholder narratives</small>
+                </div>
+            </div>
+        </section>
+
+        <section id="briefs">
+            <h2>Experience Briefs</h2>
+            <div class="accordion">
+                <details class="accordion-item">
+                    <summary>
+                        <div>
+                            <strong>RailOps Tiger Team</strong><br>
+                            <span>Operational analytics volunteer · 2024</span>
+                        </div>
+                    </summary>
+                    <div>
+                        Coordinated with station masters to transform manual throughput reports into live dashboards. Implemented a what-if simulator that helped decide siding assignments during maintenance, reducing conflicts by 18%.
+                    </div>
+                </details>
+                <details class="accordion-item">
+                    <summary>
+                        <div>
+                            <strong>Campus Systems Collective</strong><br>
+                            <span>Student technologist · 2023</span>
+                        </div>
+                    </summary>
+                    <div>
+                        Spearheaded a "systems thinking" cohort that experimented with IoT sensor grids, policy experiments, and automation for campus mobility. Documented learnings in an open-source playbook.
+                    </div>
+                </details>
+                <details class="accordion-item">
+                    <summary>
+                        <div>
+                            <strong>InfraTech Research Aid</strong><br>
+                            <span>Energy analytics intern · 2023</span>
+                        </div>
+                    </summary>
+                    <div>
+                        Contributed to optimization scripts that recommended feeder reconfiguration. Built battery sizing calculators and packaged them into a web form for planners.
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Signal</h2>
+            <p>Prefer structured updates? I publish system notes every quarter—drop a message via LinkedIn and I’ll share the latest edition.</p>
+            <div class="grid" style="margin-top:1.5rem;">
+                <a href="https://linkedin.com/in/parthpatel" target="_blank" rel="noreferrer" class="stat-card" style="text-decoration:none; color:inherit;">
+                    <strong>LinkedIn</strong>
+                    <span>linkedin.com/in/parthpatel</span>
+                </a>
+                <a href="https://github.com/Pavo321" target="_blank" rel="noreferrer" class="stat-card" style="text-decoration:none; color:inherit;">
+                    <strong>GitHub</strong>
+                    <span>github.com/Pavo321</span>
+                </a>
+                <div class="stat-card">
+                    <strong>Newsletter</strong>
+                    <span>Request at parth25911@gmail.com</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const navLinks = document.querySelectorAll('nav a');
+        const sections = document.querySelectorAll('main section');
+        const chips = document.querySelectorAll('.chip');
+        const projectCards = document.querySelectorAll('.project-card');
+        const toggles = document.querySelectorAll('.project-toggle');
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        const setActiveLink = () => {
+            let currentId = '';
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 150 && rect.bottom >= 150) {
+                    currentId = section.id;
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href').slice(1) === currentId);
+            });
+        };
+
+        window.addEventListener('scroll', setActiveLink);
+        setActiveLink();
+
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                const filter = chip.dataset.skill;
+                projectCards.forEach(card => {
+                    const tags = card.dataset.tags.split(' ');
+                    const show = filter === 'all' || tags.includes(filter);
+                    card.classList.toggle('hidden', !show);
+                });
+            });
+        });
+
+        toggles.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const details = btn.nextElementSibling;
+                const open = details.classList.toggle('show');
+                btn.textContent = open ? 'Hide technical view' : 'See technical view';
+            });
+        });
+
+        const savedTheme = localStorage.getItem('pp-theme');
+        if (savedTheme) {
+            body.setAttribute('data-theme', savedTheme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const next = body.getAttribute('data-theme') === 'night' ? 'day' : 'night';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('pp-theme', next);
+            themeToggle.textContent = next === 'night' ? 'Switch Theme' : 'Switch Theme';
+        });
+    </script>
+</body>
+</html>
+
